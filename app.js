@@ -5,10 +5,10 @@ const path = require('path');
 const exphbs = require('express-handlebars');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-const createProductsRouter = require('./routes/products');
-const createCartsRouter = require('./routes/carts');
-const ProductsManager = require('./routes/products').ProductsManager;
-const errorHandler = require('./utils/errorHandler');
+const createProductsRouter = require('./routes/products.js');
+const createCartsRouter = require('./routes/carts.js');
+const ProductsManager = require('./routes/products.js').ProductsManager;
+const errorHandler = require('./utils/errorHandler.js');
 
 const app = express();
 const httpServer = createServer(app);
