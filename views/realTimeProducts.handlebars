@@ -2,12 +2,16 @@
 <html>
 <head>
     <title>Real-Time Products</title>
+    <link rel="stylesheet" href="/style.css">
+    <!-- Incluye el script de Socket.io para manejar conexiones WebSocket -->
     <script src="/socket.io/socket.io.js"></script>
+    <!-- Incluye el script principal de la aplicacion -->
     <script src="/js/main.js"></script>
 </head>
 <body>
     <h1>Real-Time Product List</h1>
     <div id="products_list">
+        <!-- Recorre cada producto y lo renderiza en la pagina -->
         {{#each this}}
             <div>
                 <h3>{{title}}</h3>
@@ -17,6 +21,7 @@
         {{/each}}
     </div>
     <form id="add-product-form">
+        <!-- Formulario para agregar un nuevo producto -->
         <input type="text" name="title" placeholder="Title" required>
         <input type="text" name="description" placeholder="Description" required>
         <input type="text" name="code" placeholder="Code" required>
@@ -26,11 +31,14 @@
         <input type="submit" value="Add Product">
     </form>
     <script>
+        // Manejador del evento submit del formulario
         document.getElementById('add-product-form').addEventListener('submit', async (event) => {
             event.preventDefault();
+            // Obtiene los datos del formulario
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
             
+            // Envia los datos del nuevo producto al servidor
             const response = await fetch('/api/products', {
                 method: 'POST',
                 headers: {
@@ -40,7 +48,7 @@
             });
             
             if (response.ok) {
-                event.target.reset();
+                event.target.reset(); // Resetea el formulario si la respuesta es exitosa
             }
         });
     </script>

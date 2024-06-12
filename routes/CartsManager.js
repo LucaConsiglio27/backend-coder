@@ -1,12 +1,14 @@
 const fs = require('fs').promises;
 const path = require('path');
 
+// Clase para manejar carritos
 class CartsManager {
     constructor(filePath, productsManager) {
-        this.filePath = filePath;
-        this.productsManager = productsManager;
+        this.filePath = filePath; // Ruta al archivo de carritos
+        this.productsManager = productsManager; // Instancia del manejador de productos
     }
 
+    // Leer el archivo de carritos
     async readFile() {
         try {
             const data = await fs.readFile(this.filePath, 'utf-8');
@@ -16,6 +18,7 @@ class CartsManager {
         }
     }
 
+    // Escribir en el archivo de carritos
     async writeFile(data) {
         try {
             await fs.writeFile(this.filePath, JSON.stringify(data, null, 2));
@@ -24,15 +27,18 @@ class CartsManager {
         }
     }
 
+    // Obtener todos los carritos
     async getAllCarts() {
         return await this.readFile();
     }
 
+    // Obtener carrito por ID
     async getCartById(id) {
         const carts = await this.readFile();
         return carts.find(c => c.id === id);
     }
 
+    // Agregar nuevo carrito
     async addCart(cart) {
         const carts = await this.readFile();
         carts.push(cart);
@@ -40,6 +46,7 @@ class CartsManager {
         return cart;
     }
 
+    // Agregar producto a un carrito
     async addProductToCart(cartId, productId) {
         const carts = await this.readFile();
         const cartIndex = carts.findIndex(c => c.id === cartId);
@@ -58,8 +65,10 @@ class CartsManager {
         const productIndex = cart.products.findIndex(p => p.product === productId);
 
         if (productIndex !== -1) {
+            // Incrementar la cantidad si el producto ya está en el carrito
             cart.products[productIndex].quantity++;
         } else {
+            // Agregar nuevo producto al carrito
             cart.products.push({ product: productId, quantity: 1 });
         }
 

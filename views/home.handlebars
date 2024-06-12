@@ -2,11 +2,15 @@
 <html>
 <head>
     <title>Home</title>
+    <!-- Establece el titulo de la pagina -->
 </head>
 <body>
-    <h1>Product List</h1>
+    <h1 class="h1_home">Product List</h1>
+    <!-- Encabezado principal de la pagina -->
     <ul id="product-list">
+        <!-- Lista desordenada donde se mostraran los productos -->
         {{#each this}}
+            <!-- Recorre cada producto y lo renderiza como un elemento de lista -->
             <li>{{title}} - {{description}} - ${{price}}</li>
         {{/each}}
     </ul>

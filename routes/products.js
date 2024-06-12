@@ -1,24 +1,28 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
-const generateId = require('../utils/generateId');
-const errorHandler = require('../utils/errorHandler');
+const generateId = require('../utils/generateId.js');
+const errorHandler = require('../utils/errorHandler.js');
 
+// Clase para manejar productos
 class ProductsManager {
     constructor(filePath) {
         this.filePath = filePath;
     }
 
+    // Obtener todos los productos
     async getAll() {
         const data = await fs.promises.readFile(this.filePath, 'utf-8');
         return JSON.parse(data);
     }
 
+    // Obtener producto por ID
     async getById(id) {
         const products = await this.getAll();
         return products.find(p => p.id === id);
     }
 
+    // Crear nuevo producto
     async create(productData) {
         const products = await this.getAll();
         const newProduct = { id: generateId(), ...productData, status: true };
@@ -27,6 +31,7 @@ class ProductsManager {
         return newProduct;
     }
 
+    // Actualizar producto existente
     async update(id, updatedData) {
         const products = await this.getAll();
         const index = products.findIndex(p => p.id === id);
@@ -38,6 +43,7 @@ class ProductsManager {
         throw new Error('Product not found');
     }
 
+    // Eliminar producto por ID
     async delete(id) {
         const products = await this.getAll();
         const index = products.findIndex(p => p.id === id);
@@ -50,10 +56,12 @@ class ProductsManager {
     }
 }
 
+// Crear router para manejar rutas de productos
 const createProductsRouter = (filePath, io) => {
     const router = express.Router();
     const productsManager = new ProductsManager(filePath);
 
+    // Obtener todos los productos o un número limitado
     router.get('/', async (req, res) => {
         try {
             const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
@@ -64,6 +72,7 @@ const createProductsRouter = (filePath, io) => {
         }
     });
 
+    // Obtener producto por ID
     router.get('/:pid', async (req, res) => {
         try {
             const product = await productsManager.getById(req.params.pid);
@@ -77,6 +86,7 @@ const createProductsRouter = (filePath, io) => {
         }
     });
 
+    // Crear nuevo producto
     router.post('/', async (req, res) => {
         try {
             const { title, description, code, price, stock, category, thumbnails = [] } = req.body;
@@ -84,27 +94,29 @@ const createProductsRouter = (filePath, io) => {
                 return res.status(400).send('Missing required fields');
             }
             const newProduct = await productsManager.create({ title, description, code, price, stock, category, thumbnails });
-            io.emit('productAdded', newProduct);
+            io.emit('productAdded', newProduct); // Emitir evento de WebSocket
             res.json(newProduct);
         } catch (err) {
             errorHandler(err, res);
         }
     });
 
+    // Actualizar producto existente
     router.put('/:pid', async (req, res) => {
         try {
             const updatedProduct = await productsManager.update(req.params.pid, req.body);
-            io.emit('productUpdated', updatedProduct);
+            io.emit('productUpdated', updatedProduct); // Emitir evento de WebSocket
             res.json(updatedProduct);
         } catch (err) {
             errorHandler(err, res);
         }
     });
 
+    // Eliminar producto por ID
     router.delete('/:pid', async (req, res) => {
         try {
             await productsManager.delete(req.params.pid);
-            io.emit('productDeleted', req.params.pid);
+            io.emit('productDeleted', req.params.pid); // Emitir evento de WebSocket
             res.status(204).send();
         } catch (err) {
             errorHandler(err, res);
@@ -114,5 +126,6 @@ const createProductsRouter = (filePath, io) => {
     return router;
 };
 
+// Exportar el router y la clase ProductsManager
 module.exports = createProductsRouter;
 module.exports.ProductsManager = ProductsManager;
