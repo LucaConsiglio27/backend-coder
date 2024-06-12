@@ -1,19 +1,64 @@
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const generateId = require('../utils/generateId');
 const errorHandler = require('../utils/errorHandler');
 
-const createProductsRouter = (productsManager, io) => {
+class ProductsManager {
+    constructor(filePath) {
+        this.filePath = filePath;
+    }
+
+    async getAll() {
+        const data = await fs.promises.readFile(this.filePath, 'utf-8');
+        return JSON.parse(data);
+    }
+
+    async getById(id) {
+        const products = await this.getAll();
+        return products.find(p => p.id === id);
+    }
+
+    async create(productData) {
+        const products = await this.getAll();
+        const newProduct = { id: generateId(), ...productData, status: true };
+        products.push(newProduct);
+        await fs.promises.writeFile(this.filePath, JSON.stringify(products, null, 2));
+        return newProduct;
+    }
+
+    async update(id, updatedData) {
+        const products = await this.getAll();
+        const index = products.findIndex(p => p.id === id);
+        if (index !== -1) {
+            products[index] = { ...products[index], ...updatedData, id };
+            await fs.promises.writeFile(this.filePath, JSON.stringify(products, null, 2));
+            return products[index];
+        }
+        throw new Error('Product not found');
+    }
+
+    async delete(id) {
+        const products = await this.getAll();
+        const index = products.findIndex(p => p.id === id);
+        if (index !== -1) {
+            products.splice(index, 1);
+            await fs.promises.writeFile(this.filePath, JSON.stringify(products, null, 2));
+            return;
+        }
+        throw new Error('Product not found');
+    }
+}
+
+const createProductsRouter = (filePath, io) => {
     const router = express.Router();
+    const productsManager = new ProductsManager(filePath);
 
     router.get('/', async (req, res) => {
         try {
             const limit = req.query.limit ? parseInt(req.query.limit) : undefined;
-            const products = await productsManager.getAllProducts();
-            if (limit) {
-                res.json(products.slice(0, limit));
-            } else {
-                res.json(products);
-            }
+            const products = await productsManager.getAll();
+            res.json(limit ? products.slice(0, limit) : products);
         } catch (err) {
             errorHandler(err, res);
         }
@@ -21,7 +66,7 @@ const createProductsRouter = (productsManager, io) => {
 
     router.get('/:pid', async (req, res) => {
         try {
-            const product = await productsManager.getProductById(req.params.pid);
+            const product = await productsManager.getById(req.params.pid);
             if (product) {
                 res.json(product);
             } else {
@@ -38,11 +83,9 @@ const createProductsRouter = (productsManager, io) => {
             if (!title || !description || !code || price == null || stock == null || !category) {
                 return res.status(400).send('Missing required fields');
             }
-            const newProduct = { id: generateId(), title, description, code, price, status: true, stock, category, thumbnails };
-            const addedProduct = await productsManager.addProduct(newProduct);
-            const products = await productsManager.getAllProducts();
-            io.emit('product-update', products);  // Emitimos la actualización de productos
-            res.status(201).json(addedProduct);
+            const newProduct = await productsManager.create({ title, description, code, price, stock, category, thumbnails });
+            io.emit('productAdded', newProduct);
+            res.json(newProduct);
         } catch (err) {
             errorHandler(err, res);
         }
@@ -50,11 +93,9 @@ const createProductsRouter = (productsManager, io) => {
 
     router.put('/:pid', async (req, res) => {
         try {
-            const updatedProduct = req.body;
-            const product = await productsManager.updateProduct(req.params.pid, updatedProduct);
-            const products = await productsManager.getAllProducts();
-            io.emit('product-update', products);  // Emitimos la actualización de productos
-            res.json(product);
+            const updatedProduct = await productsManager.update(req.params.pid, req.body);
+            io.emit('productUpdated', updatedProduct);
+            res.json(updatedProduct);
         } catch (err) {
             errorHandler(err, res);
         }
@@ -62,15 +103,8 @@ const createProductsRouter = (productsManager, io) => {
 
     router.delete('/:pid', async (req, res) => {
         try {
-            const productId = req.params.pid;
-            const products = await productsManager.getAllProducts();
-            const index = products.findIndex(p => p.id === productId);
-            if (index === -1) {
-                return res.status(404).send('Product not found');
-            }
-            products.splice(index, 1);
-            await productsManager.writeFile(products);
-            io.emit('product-update', products);  // Emitimos la actualización de productos
+            await productsManager.delete(req.params.pid);
+            io.emit('productDeleted', req.params.pid);
             res.status(204).send();
         } catch (err) {
             errorHandler(err, res);
@@ -81,4 +115,4 @@ const createProductsRouter = (productsManager, io) => {
 };
 
 module.exports = createProductsRouter;
-
+module.exports.ProductsManager = ProductsManager;

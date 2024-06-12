@@ -1,28 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Products</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/main.js"></script>
 </head>
 <body>
     <h1>Real-Time Product List</h1>
-    <ul id="product-list">
-        {{#each products}}
-        <li>{{this.title}} - ${{this.price}}</li>
+    <div id="products_list">
+        {{#each this}}
+            <div>
+                <h3>{{title}}</h3>
+                <p>{{price}}</p>
+                <p>{{description}}</p>
+            </div>
         {{/each}}
-    </ul>
-    <script src="/socket.io/socket.io.js"></script>
+    </div>
+    <form id="add-product-form">
+        <input type="text" name="title" placeholder="Title" required>
+        <input type="text" name="description" placeholder="Description" required>
+        <input type="text" name="code" placeholder="Code" required>
+        <input type="number" name="price" placeholder="Price" required>
+        <input type="number" name="stock" placeholder="Stock" required>
+        <input type="text" name="category" placeholder="Category" required>
+        <input type="submit" value="Add Product">
+    </form>
     <script>
-        const socket = io();
-        socket.on('product-update', (products) => {
-            const productList = document.getElementById('product-list');
-            productList.innerHTML = '';
-            products.forEach(product => {
-                const li = document.createElement('li');
-                li.textContent = `${product.title} - $${product.price}`;
-                productList.appendChild(li);
+        document.getElementById('add-product-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const data = Object.fromEntries(formData.entries());
+            
+            const response = await fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
             });
+            
+            if (response.ok) {
+                event.target.reset();
+            }
         });
     </script>
 </body>
