@@ -11,8 +11,8 @@ const io = socketIo(server);
 const productsFile = path.join(__dirname, 'data', 'products.json');
 const cartsFile = path.join(__dirname, 'data', 'carts.json');
 
-const ProductsManager = require('./managers/ProductsManager');
-const CartsManager = require('./managers/CartsManager');
+const ProductsManager = require('./routes/ProductsManager');
+const CartsManager = require('./routes/CartsManager');
 const createProductsRouter = require('./routes/products');
 const createCartsRouter = require('./routes/carts');
 const createViewsRouter = require('./routes/views');
