@@ -1,40 +1,43 @@
-const express = require('express'); 
-// Importa el modulo express para manejar las rutas y las solicitudes HTTP.
+const express = require('express');
+const path = require('path');
+const { create } = require('express-handlebars');
+const http = require('http');
+const socketIo = require('socket.io');
 
-const createProductsRouter = require('./routes/products'); 
-// Importa la funcion que crea el router de productos.
+const app = express();
+const server = http.createServer(app);
+const io = socketIo(server);
 
-const createCartsRouter = require('./routes/carts'); 
-// Importa la funcion que crea el router de carritos.
+const productsFile = path.join(__dirname, 'data', 'products.json');
+const cartsFile = path.join(__dirname, 'data', 'carts.json');
 
-const path = require('path'); 
-// Importa el modulo path para trabajar con rutas de archivos.
+const ProductsManager = require('./managers/ProductsManager');
+const CartsManager = require('./managers/CartsManager');
+const createProductsRouter = require('./routes/products');
+const createCartsRouter = require('./routes/carts');
+const createViewsRouter = require('./routes/views');
 
-const app = express(); 
-// Crea una instancia de una aplicacion de Express.
+const productsManager = new ProductsManager(productsFile);
+const cartsManager = new CartsManager(cartsFile, productsManager);
 
-const PORT = 8080; 
-// Define el puerto en el que correra la aplicacion.
+// Configurar el motor de plantillas Handlebars
+const hbs = create({ extname: '.handlebars' });
+app.engine('.handlebars', hbs.engine);
+app.set('view engine', '.handlebars');
+app.set('views', path.join(__dirname, 'views'));
 
-app.use(express.json()); 
-// Configura la aplicacion para que use middleware que analiza cuerpos de solicitudes JSON.
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-const productosFilePath = path.join(__dirname, 'data', 'productos.json'); 
-// Define la ruta al archivo de productos.
+app.use('/api/products', createProductsRouter(productsManager, io));
+app.use('/api/carts', createCartsRouter(cartsManager));
+app.use('/', createViewsRouter(productsManager));
 
-const carritosFilePath = path.join(__dirname, 'data', 'carritos.json'); 
-// Define la ruta al archivo de carritos.
+// Archivos estáticos
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/api/products', createProductsRouter(productosFilePath)); 
-// Usa el router de productos en la ruta /api/products, pasandole la ruta del archivo de productos.
+const PORT = process.env.PORT || 3000;
 
-app.use('/api/carts', createCartsRouter(carritosFilePath)); 
-// Usa el router de carritos en la ruta /api/carts, pasandole la ruta del archivo de carritos.
-
-app.listen(PORT, () => { 
-    console.log(`Server is running on port ${PORT}`); 
-    // Inicia el servidor en el puerto especificado y muestra un mensaje en la consola.
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
-
-module.exports = app; 
-// Exporta la aplicacion para que pueda ser utilizada en otros archivos.
