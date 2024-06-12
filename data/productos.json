@@ -1,1 +1,26 @@
-[{"id":"_randomId2","title":"Yogur","description":"Yogur natural, pack de 4 unidades","code":"YP004","price":3,"status":true,"stock":50,"category":"lacteos","thumbnails":["path/to/image3.jpg"]},{"id":"_dhwhgud8w","title":"Nuevo Producto","description":"Descripción del nuevo producto","code":"NP001","price":10.99,"status":true,"stock":100,"category":"nueva-categoria","thumbnails":["path/to/image1.jpg","path/to/image2.jpg"]}]
+[
+    {
+        "id": "1",
+        "title": "Producto 1",
+        "description": "Descripción del producto 1",
+        "price": 10.99,
+        "thumbnails": [
+            "thumbnail1.jpg",
+            "thumbnail2.jpg"
+        ],
+        "category": "Categoría 1",
+        "stock": 20
+    },
+    {
+        "id": "2",
+        "title": "Producto 2",
+        "description": "Descripción del producto 2",
+        "price": 19.99,
+        "thumbnails": [
+            "thumbnail3.jpg",
+            "thumbnail4.jpg"
+        ],
+        "category": "Categoría 2",
+        "stock": 15
+    }
+]

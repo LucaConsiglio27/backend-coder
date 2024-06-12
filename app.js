@@ -29,8 +29,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
-const productsRouter = createProductsRouter('./data/products.json', io);
-const cartsRouter = createCartsRouter('./data/carts.json');
+const productsRouter = createProductsRouter(path.join(__dirname, 'data/products.json'), io);
+const cartsRouter = createCartsRouter(path.join(__dirname, 'data/carts.json'));
 app.use('/api/products', productsRouter);
 app.use('/api/carts', cartsRouter);
 
@@ -38,7 +38,7 @@ app.use('/api/carts', cartsRouter);
 app.get('/', (req, res) => res.render('home', { layout: false }));
 app.get('/realtimeproducts', async (req, res) => {
     try {
-        const productsManager = new ProductsManager('./data/products.json');
+        const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
         const products = await productsManager.getAll();
         res.render('realTimeProducts', { layout: false, products });
     } catch (err) {
@@ -50,7 +50,7 @@ app.get('/realtimeproducts', async (req, res) => {
 // WebSocket connection
 io.on('connection', async (socket) => {
     try {
-        const productsManager = new ProductsManager('./data/products.json');
+        const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
         const products = await productsManager.getAll();
         socket.emit('getProducts', products);
     } catch (err) {
