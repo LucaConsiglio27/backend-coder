@@ -1,25 +1,32 @@
-<!-- src/views/home.handlebars -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>Home</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <h1>Product List</h1>
-    <ul>
-        {{#each products}}
-            <li>{{this.name}} - {{this.price}} <a href="/products/{{this._id}}">View Details</a> <button onclick="addToCart('{{this._id}}')">Add to Cart</button></li>
-        {{/each}}
-    </ul>
-    <div>
-        {{#if hasPrevPage}}
-            <a href="{{prevLink}}">Previous</a>
-        {{/if}}
-        <span>Page {{page}} of {{totalPages}}</span>
-        {{#if hasNextPage}}
-            <a href="{{nextLink}}">Next</a>
-        {{/if}}
+    <header>
+        <h1>Product List</h1>
+    </header>
+    <div class="container">
+        <ul class="product-list">
+            {{#each products}}
+                <li class="product-item">{{this.name}} - ${{this.price}} 
+                    <a href="/products/{{this._id}}">View Details</a> 
+                    <button onclick="addToCart('{{this._id}}')">Add to Cart</button>
+                </li>
+            {{/each}}
+        </ul>
+        <div class="pagination">
+            {{#if hasPrevPage}}
+                <a href="{{prevLink}}">Previous</a>
+            {{/if}}
+            <span>Page {{page}} of {{totalPages}}</span>
+            {{#if hasNextPage}}
+                <a href="{{nextLink}}">Next</a>
+            {{/if}}
+        </div>
     </div>
     <script>
         async function addToCart(productId) {

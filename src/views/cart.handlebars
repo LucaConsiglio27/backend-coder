@@ -3,14 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <title>Cart</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <h1>Cart</h1>
-    <ul>
-        {{#each cart.products}}
-            <li>{{this.product.name}} - {{this.quantity}} <button onclick="removeFromCart('{{cart._id}}', '{{this.product._id}}')">Remove</button></li>
-        {{/each}}
-    </ul>
+    <header>
+        <h1>Cart</h1>
+    </header>
+    <div class="container">
+        <ul class="cart-list">
+            {{#each cart.products}}
+                <li class="cart-item">{{this.product.name}} - {{this.quantity}} 
+                    <button onclick="removeFromCart('{{cart._id}}', '{{this.product._id}}')">Remove</button>
+                </li>
+            {{/each}}
+        </ul>
+    </div>
     <script>
         async function removeFromCart(cartId, productId) {
             await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'DELETE' });

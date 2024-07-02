@@ -3,13 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <title>Product Details</title>
+    <link rel="stylesheet" href="/css/styles.css">
 </head>
 <body>
-    <h1>{{product.name}}</h1>
-    <p>Price: {{product.price}}</p>
-    <p>Category: {{product.category}}</p>
-    <p>{{product.description}}</p>
-    <button onclick="addToCart('{{product._id}}')">Add to Cart</button>
+    <header>
+        <h1>{{product.name}}</h1>
+    </header>
+    <div class="container">
+        <p class="price">Price: ${{product.price}}</p>
+        <p>Category: {{product.category}}</p>
+        <p>{{product.description}}</p>
+        <button onclick="addToCart('{{product._id}}')">Add to Cart</button>
+    </div>
     <script>
         async function addToCart(productId) {
             await fetch(`/api/carts/cartId/products/${productId}`, { method: 'POST' });
