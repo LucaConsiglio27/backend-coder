@@ -1,48 +1,63 @@
-// Importar módulos necesarios
+// src/routes/carts.js
 const express = require('express');
-const generateId = require('../../utils/generateId.js'); // Función para generar IDs únicos
-const errorHandler = require('../../utils/errorHandler.js'); // Manejador de errores
+const { Cart } = require('../models');
+const router = express.Router();
 
-// Función para crear el enrutador de carritos
-const createCartsRouter = (cartsManager) => {
-    const router = express.Router();
+router.delete('/:cid/products/:pid', async (req, res) => {
+    const { cid, pid } = req.params;
 
-    // Ruta para crear un nuevo carrito
-    router.post('/', async (req, res) => {
-        try {
-            const nuevoCarrito = { id: generateId(), products: [] }; // Crear un nuevo carrito con un ID único y sin productos
-            const addedCart = await cartsManager.addCart(nuevoCarrito); // Agregar el nuevo carrito usando el manejador de carritos
-            res.json(addedCart); // Responder con el carrito agregado
-        } catch (err) {
-            errorHandler(err, res); // Manejar errores
-        }
-    });
+    try {
+        await Cart.updateOne({ _id: cid }, { $pull: { products: { product: pid } } });
+        res.json({ status: 'success' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
 
-    // Ruta para obtener un carrito por ID
-    router.get('/:cid', async (req, res) => {
-        try {
-            const cart = await cartsManager.getCartById(req.params.cid); // Obtener el carrito por ID usando el manejador de carritos
-            if (cart) {
-                res.json(cart); // Responder con el carrito si se encuentra
-            } else {
-                res.status(404).send('Cart not found'); // Responder con un error 404 si no se encuentra el carrito
-            }
-        } catch (err) {
-            errorHandler(err, res); // Manejar errores
-        }
-    });
+router.put('/:cid', async (req, res) => {
+    const { cid } = req.params;
+    const { products } = req.body;
 
-    // Ruta para agregar un producto a un carrito
-    router.post('/:cid/product/:pid', async (req, res) => {
-        try {
-            const cart = await cartsManager.addProductToCart(req.params.cid, req.params.pid); // Agregar un producto al carrito usando el manejador de carritos
-            res.json(cart); // Responder con el carrito actualizado
-        } catch (err) {
-            errorHandler(err, res); // Manejar errores
-        }
-    });
+    try {
+        await Cart.updateOne({ _id: cid }, { products });
+        res.json({ status: 'success' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
 
-    return router;
-};
+router.put('/:cid/products/:pid', async (req, res) => {
+    const { cid, pid } = req.params;
+    const { quantity } = req.body;
 
-module.exports = createCartsRouter; // Exportar la función para crear el enrutador de carritos
+    try {
+        await Cart.updateOne({ _id: cid, 'products.product': pid }, { $set: { 'products.$.quantity': quantity } });
+        res.json({ status: 'success' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+router.delete('/:cid', async (req, res) => {
+    const { cid } = req.params;
+
+    try {
+        await Cart.updateOne({ _id: cid }, { $set: { products: [] } });
+        res.json({ status: 'success' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+router.get('/:cid', async (req, res) => {
+    const { cid } = req.params;
+
+    try {
+        const cart = await Cart.findById(cid).populate('products.product');
+        res.json({ status: 'success', payload: cart.products });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
+module.exports = router;

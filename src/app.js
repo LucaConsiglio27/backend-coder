@@ -1,44 +1,26 @@
+// src/app.js
 const express = require('express');
+const mongoose = require('mongoose');
 const path = require('path');
-const { createServer } = require('http');
-const { Server } = require('socket.io');
-const exphbs = require('express-handlebars');
+const productRoutes = require('./routes/products');
+const cartRoutes = require('./routes/carts');
+const viewsRoutes = require('./routes/views');
 
 const app = express();
-const server = createServer(app);
-const io = new Server(server);
+const PORT = process.env.PORT || 3000;
 
-// Routers
-const productRouter = require('./src/routes/products');
-const viewsRouter = require('./src/routes/views');
-
-// Handlebars setup
-app.engine('handlebars', exphbs());
-app.set('view engine', 'handlebars');
-app.set('views', path.join(__dirname, 'src/views'));
+// Conexión a MongoDB
+mongoose.connect('mongodb://localhost:27017/mydatabase', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('Could not connect to MongoDB', err));
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Use Routers
-app.use('/api/products', productRouter);
-app.use('/', viewsRouter);
+app.use('/api/products', productRoutes);
+app.use('/api/carts', cartRoutes);
+app.use('/', viewsRoutes);
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
-
-// WebSocket connection
-io.on('connection', async (socket) => {
-    try {
-        const productsManager = new ProductsManager(path.join(__dirname, 'src/data/products.json'));
-        const products = await productsManager.getAll();
-        socket.emit('getProducts', products);
-    } catch (err) {
-        console.error('Error getting products:', err);
-    }
-});
-
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });

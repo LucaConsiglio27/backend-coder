@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Cart</title>
+</head>
+<body>
+    <h1>Cart</h1>
+    <ul>
+        {{#each cart.products}}
+            <li>{{this.product.name}} - {{this.quantity}} <button onclick="removeFromCart('{{cart._id}}', '{{this.product._id}}')">Remove</button></li>
+        {{/each}}
+    </ul>
+    <script>
+        async function removeFromCart(cartId, productId) {
+            await fetch(`/api/carts/${cartId}/products/${productId}`, { method: 'DELETE' });
+            location.reload();
+        }
+    </script>
+</body>
+</html>

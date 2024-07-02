@@ -1,3 +1,4 @@
+<!-- src/views/home.handlebars -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,13 +9,21 @@
     <h1>Product List</h1>
     <ul>
         {{#each products}}
-            <li>{{this.name}} - {{this.price}} <button onclick="deleteProduct('{{this.id}}')">Delete</button></li>
+            <li>{{this.name}} - {{this.price}} <a href="/products/{{this._id}}">View Details</a> <button onclick="addToCart('{{this._id}}')">Add to Cart</button></li>
         {{/each}}
     </ul>
+    <div>
+        {{#if hasPrevPage}}
+            <a href="{{prevLink}}">Previous</a>
+        {{/if}}
+        <span>Page {{page}} of {{totalPages}}</span>
+        {{#if hasNextPage}}
+            <a href="{{nextLink}}">Next</a>
+        {{/if}}
+    </div>
     <script>
-        async function deleteProduct(id) {
-            await fetch(`/api/products/${id}`, { method: 'DELETE' });
-            location.reload();
+        async function addToCart(productId) {
+            await fetch(`/api/carts/cartId/products/${productId}`, { method: 'POST' });
         }
     </script>
 </body>

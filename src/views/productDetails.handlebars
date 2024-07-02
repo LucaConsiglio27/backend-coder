@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Product Details</title>
+</head>
+<body>
+    <h1>{{product.name}}</h1>
+    <p>Price: {{product.price}}</p>
+    <p>Category: {{product.category}}</p>
+    <p>{{product.description}}</p>
+    <button onclick="addToCart('{{product._id}}')">Add to Cart</button>
+    <script>
+        async function addToCart(productId) {
+            await fetch(`/api/carts/cartId/products/${productId}`, { method: 'POST' });
+        }
+    </script>
+</body>
+</html>
