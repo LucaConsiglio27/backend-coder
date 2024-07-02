@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Home</title>
+</head>
+<body>
+    <h1>Product List</h1>
+    <ul>
+        {{#each products}}
+            <li>{{this.name}} - {{this.price}} <button onclick="deleteProduct('{{this.id}}')">Delete</button></li>
+        {{/each}}
+    </ul>
+    <script>
+        async function deleteProduct(id) {
+            await fetch(`/api/products/${id}`, { method: 'DELETE' });
+            location.reload();
+        }
+    </script>
+</body>
+</html>

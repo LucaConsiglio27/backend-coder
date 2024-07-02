@@ -1,7 +1,7 @@
 // Importar módulos necesarios
 const express = require('express');
-const generateId = require('../utils/generateId.js'); // Función para generar IDs únicos
-const errorHandler = require('../utils/errorHandler.js'); // Manejador de errores
+const generateId = require('../../utils/generateId.js'); // Función para generar IDs únicos
+const errorHandler = require('../../utils/errorHandler.js'); // Manejador de errores
 
 // Función para crear el enrutador de carritos
 const createCartsRouter = (cartsManager) => {
