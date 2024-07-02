@@ -1,31 +1,40 @@
 const express = require('express');
 const path = require('path');
+const exphbs = require('express-handlebars');
+const ProductsManager = require('./managers/ProductsManager'); // Ajusta la ruta según la ubicación real de ProductsManager
+
 const app = express();
 
 // Configuración de Handlebars
-const exphbs = require('express-handlebars');
-app.engine('handlebars', exphbs.engine());
-app.set('view engine', 'handlebars');
+app.engine('.hbs', exphbs({
+    defaultLayout: false,
+    extname: '.hbs',
+    layoutsDir: path.join(__dirname, 'views/layouts') // Ajusta según la estructura de tus vistas
+}));
+app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Configuración para servir archivos estáticos
+// Middleware para servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
 app.get('/', async (req, res) => {
-    const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
-    const products = await productsManager.getAll();
+    try {
+        const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
+        const products = await productsManager.getAll();
 
-    res.render('home', {
-        title: 'Tienda de Productos',
-        products: products
-    });
+        res.render('home', {
+            title: 'Tienda de Productos',
+            products: products
+        });
+    } catch (error) {
+        console.error('Error al obtener productos:', error);
+        res.status(500).send('Error interno del servidor');
+    }
 });
-
-// Otras rutas y lógica de tu aplicación...
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
