@@ -1,16 +1,19 @@
 const express = require('express');
 const path = require('path');
-const exphbs = require('express-handlebars');
-const ProductsManager = require('./managers/ProductsManager'); // Ajusta la ruta según la ubicación real de ProductsManager
+const { engine } = require('express-handlebars');
+const ProductsManager = require('./managers/ProductsManager.js'); // Ajusta la ruta según la ubicación real de ProductsManager
 
 const app = express();
 
 // Configuración de Handlebars
-app.engine('.hbs', exphbs({
-    defaultLayout: false,
-    extname: '.hbs',
-    layoutsDir: path.join(__dirname, 'views/layouts') // Ajusta según la estructura de tus vistas
-}));
+app.engine(
+    ".hbs",
+    engine({
+        defaultLayout: false,
+        extname: ".hbs",
+        // layoutsDir: path.join(__dirname, 'views/layouts') // Esta línea no es necesaria si no usas layouts
+    })
+);
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 
