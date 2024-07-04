@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <title>Real-Time Products</title>
     <link rel="stylesheet" href="/css/styles.css">
+    <!-- Incluye la biblioteca Socket.IO -->
     <script src="/socket.io/socket.io.js"></script>
+    <!-- Incluye el archivo JavaScript principal -->
     <script src="/js/main.js"></script>
 </head>
 <body>
@@ -12,6 +14,7 @@
         <h1>Real-Time Product List</h1>
     </header>
     <div class="container">
+        <!-- Sección para mostrar la lista de productos -->
         <div id="products_list" class="product-list">
             {{#each this}}
                 <div class="product-item">
@@ -21,6 +24,7 @@
                 </div>
             {{/each}}
         </div>
+        <!-- Formulario para añadir un nuevo producto -->
         <form id="add-product-form">
             <input type="text" name="title" placeholder="Title" required>
             <input type="text" name="description" placeholder="Description" required>
@@ -32,21 +36,32 @@
         </form>
     </div>
     <script>
+        // Añade un evento para manejar el envío del formulario de añadir producto
         document.getElementById('add-product-form').addEventListener('submit', async (event) => {
-            event.preventDefault();
+            event.preventDefault(); // Previene el comportamiento por defecto del formulario
+            
+            // Obtiene los datos del formulario
             const formData = new FormData(event.target);
             const data = Object.fromEntries(formData.entries());
             
-            const response = await fetch('/api/products', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            });
-            
-            if (response.ok) {
-                event.target.reset();
+            try {
+                // Envía una solicitud POST a la API para añadir el producto
+                const response = await fetch('/api/products', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                // Si la respuesta es correcta, resetea el formulario
+                if (response.ok) {
+                    event.target.reset();
+                } else {
+                    console.error('Error al añadir el producto:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error al enviar la solicitud:', error);
             }
         });
     </script>

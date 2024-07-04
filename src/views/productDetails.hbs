@@ -10,14 +10,28 @@
         <h1>{{product.name}}</h1>
     </header>
     <div class="container">
+        <!-- Muestra los detalles del producto -->
         <p class="price">Price: ${{product.price}}</p>
         <p>Category: {{product.category}}</p>
         <p>{{product.description}}</p>
+        <!-- Botón para añadir el producto al carrito -->
         <button onclick="addToCart('{{product._id}}')">Add to Cart</button>
     </div>
     <script>
+        // Función para añadir el producto al carrito
         async function addToCart(productId) {
-            await fetch(`/api/carts/cartId/products/${productId}`, { method: 'POST' });
+            try {
+                // Envía una solicitud POST para añadir el producto al carrito
+                const response = await fetch(`/api/carts/cartId/products/${productId}`, { method: 'POST' });
+                
+                if (response.ok) {
+                    console.log('Producto añadido al carrito');
+                } else {
+                    console.error('Error al añadir el producto al carrito:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error al enviar la solicitud:', error);
+            }
         }
     </script>
 </body>
