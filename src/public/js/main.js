@@ -1,55 +1,74 @@
-// Conectar al servidor de socket.io
-const socket = io();
+// public/js/main.js
+document.addEventListener('DOMContentLoaded', () => {
+    const socket = io();
 
-// Escuchar el evento 'getProducts' para obtener la lista completa de productos
-socket.on("getProducts", (data) => {
-    const productsList = document.getElementById("products_list");
-    productsList.innerHTML = ""; // Limpiar la lista actual de productos
-    data.forEach(product => {
-        const productDiv = document.createElement("div");
-        productDiv.innerHTML = `
-            <h3>${product.title}</h3>
-            <p>${product.price}</p>
-            <p>${product.description}</p>
-        `;
-        productsList.appendChild(productDiv);
-    });
-});
+    // Función para añadir un producto
+    document.getElementById('add-product-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const formData = new FormData(event.target);
+        const data = Object.fromEntries(formData.entries());
 
-// Escuchar el evento 'productAdded' para agregar un nuevo producto a la lista
-socket.on("productAdded", (product) => {
-    const productsList = document.getElementById("products_list");
-    const productDiv = document.createElement("div");
-    productDiv.innerHTML = `
-        <h3>${product.title}</h3>
-        <p>${product.price}</p>
-        <p>${product.description}</p>
-    `;
-    productsList.appendChild(productDiv);
-});
+        try {
+            const response = await fetch('/api/products', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
 
-// Escuchar el evento 'productUpdated' para actualizar un producto existente en la lista
-socket.on("productUpdated", (updatedProduct) => {
-    const items = document.querySelectorAll('#products_list div');
-    items.forEach(item => {
-        const titleElement = item.querySelector('h3');
-        if (titleElement && titleElement.textContent === updatedProduct.title) {
-            item.innerHTML = `
-                <h3>${updatedProduct.title}</h3>
-                <p>${updatedProduct.price}</p>
-                <p>${updatedProduct.description}</p>
-            `;
+            if (response.ok) {
+                event.target.reset();
+                socket.emit('newProduct');
+            } else {
+                console.error('Error al añadir el producto:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error al enviar la solicitud:', error);
         }
     });
-});
 
-// Escuchar el evento 'productDeleted' para eliminar un producto de la lista
-socket.on("productDeleted", (productId) => {
-    const items = document.querySelectorAll('#products_list div');
-    items.forEach(item => {
-        const titleElement = item.querySelector('h3');
-        if (titleElement && titleElement.textContent === productId) {
-            item.remove();
+    // Función para actualizar un producto
+    async function updateProduct(productId, updatedData) {
+        try {
+            const response = await fetch(`/api/products/${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedData)
+            });
+
+            if (response.ok) {
+                socket.emit('updateProduct', productId);
+            } else {
+                console.error('Error al actualizar el producto:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error al enviar la solicitud:', error);
         }
+    }
+
+    // Función para eliminar un producto
+    async function deleteProduct(productId) {
+        try {
+            const response = await fetch(`/api/products/${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                socket.emit('deleteProduct', productId);
+            } else {
+                console.error('Error al eliminar el producto:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Error al enviar la solicitud:', error);
+        }
+    }
+
+    // Escucha eventos de Socket.IO para actualizar la lista de productos en tiempo real
+    socket.on('productListUpdated', () => {
+        // Lógica para actualizar la lista de productos en la interfaz
+        location.reload(); // Recarga la página para actualizar la lista
     });
 });

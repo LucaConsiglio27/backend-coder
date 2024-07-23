@@ -18,19 +18,16 @@
         <div id="products_list" class="product-list">
             {{#each this}}
                 <div class="product-item">
-                    <h3>{{title}}</h3>
+                    <h3>{{name}}</h3>
                     <p class="price">{{price}}</p>
-                    <p>{{description}}</p>
+                    <p>{{category}}</p>
                 </div>
             {{/each}}
         </div>
         <!-- Formulario para añadir un nuevo producto -->
         <form id="add-product-form">
-            <input type="text" name="title" placeholder="Title" required>
-            <input type="text" name="description" placeholder="Description" required>
-            <input type="text" name="code" placeholder="Code" required>
+            <input type="text" name="name" placeholder="Name" required>
             <input type="number" name="price" placeholder="Price" required>
-            <input type="number" name="stock" placeholder="Stock" required>
             <input type="text" name="category" placeholder="Category" required>
             <input type="submit" value="Add Product">
         </form>

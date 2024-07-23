@@ -1,9 +1,12 @@
 const express = require('express');
 const path = require('path');
 const { engine } = require('express-handlebars');
-const ProductsManager = require('./managers/ProductsManager'); 
+const http = require('http');
+const socketIO = require('socket.io');
 
 const app = express();
+const server = http.createServer(app);
+const io = socketIO(server);
 
 // Configuración de Handlebars
 app.engine(
@@ -16,47 +19,42 @@ app.engine(
 app.set('view engine', '.hbs');
 app.set('views', path.join(__dirname, 'views'));
 
-// Middleware para servir archivos estáticos
+// Middleware para parsear JSON y servir archivos estáticos
+app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rutas
-const productsRouter = require('./routes/products.js');
+const productsRouter = require('./routes/products');
+const viewsRouter = require('./routes/views');
+const cartsRouter = require('./routes/carts');
+
 app.use('/api/products', productsRouter);
+app.use('/api/carts', cartsRouter);
+app.use('/', viewsRouter);
 
-// Ruta para la página principal
-app.get('/', async (req, res) => {
-    try {
-        const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
-        const products = await productsManager.getAll();
+// Manejo de eventos de Socket.IO
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado');
 
-        res.render('home', {
-            title: 'Tienda de Productos',
-            products: products
-        });
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).send('Error interno del servidor');
-    }
-});
+    socket.on('newProduct', () => {
+        io.emit('productListUpdated');
+    });
 
-// Ruta para la página de productos
-app.get('/products', async (req, res) => {
-    try {
-        const productsManager = new ProductsManager(path.join(__dirname, 'data/products.json'));
-        const products = await productsManager.getAll();
+    socket.on('updateProduct', () => {
+        io.emit('productListUpdated');
+    });
 
-        res.render('products', {
-            title: 'Listado de Productos',
-            products: products
-        });
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).send('Error interno del servidor');
-    }
+    socket.on('deleteProduct', () => {
+        io.emit('productListUpdated');
+    });
+
+    socket.on('disconnect', () => {
+        console.log('Cliente desconectado');
+    });
 });
 
 // Iniciar el servidor
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Servidor corriendo en el puerto ${PORT}`);
 });
